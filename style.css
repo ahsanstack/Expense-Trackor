@@ -577,3 +577,342 @@ main {
 
   background: linear-gradient(90deg, var(--primary), var(--secondary));
 }
+
+.modal-overlay {
+  position: fixed;
+
+  inset: 0;
+
+  background: rgba(15, 23, 42, 0.6);
+
+  backdrop-filter: blur(5px);
+
+  display: none;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  z-index: 1000;
+}
+
+.modal-overlay.show {
+  display: flex;
+}
+
+.modal {
+  width: 100%;
+
+  max-width: 470px;
+
+  background: var(--card);
+
+  color: var(--text);
+
+  border-radius: 18px;
+
+  padding: 25px;
+
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
+
+  animation: modalIn 0.25s ease;
+}
+
+@keyframes modalIn {
+  from {
+    opacity: 0;
+
+    transform: translateY(15px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal-header {
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  margin-bottom: 22px;
+}
+
+.modal-header h2 {
+  font-size: 20px;
+}
+
+.close-btn {
+  border: none;
+
+  background: transparent;
+
+  color: var(--muted);
+
+  font-size: 24px;
+}
+
+.form-group {
+  margin-bottom: 17px;
+}
+
+.form-group label {
+  display: block;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  margin-bottom: 7px;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+
+  padding: 12px;
+
+  border: 1px solid var(--border);
+
+  border-radius: 9px;
+
+  outline: none;
+
+  background: var(--background);
+
+  color: var(--text);
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: var(--primary);
+}
+
+.type-buttons {
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+
+  gap: 10px;
+}
+
+.type-btn {
+  padding: 11px;
+
+  border: 1px solid var(--border);
+
+  background: transparent;
+
+  color: var(--text);
+
+  border-radius: 9px;
+
+  transition: 0.2s;
+}
+
+.type-btn.expense-active {
+  color: var(--red);
+
+  border-color: var(--red);
+
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.type-btn.income-active {
+  color: var(--green);
+
+  border-color: var(--green);
+
+  background: rgba(16, 185, 129, 0.08);
+}
+
+.submit-btn {
+  width: 100%;
+
+  margin-top: 4px;
+}
+
+/* CONFIRM MODAL */
+
+.confirm-modal {
+  max-width: 400px;
+}
+
+.confirm-modal p {
+  color: var(--muted);
+
+  font-size: 14px;
+
+  line-height: 1.6;
+
+  margin-bottom: 22px;
+}
+
+.confirm-actions {
+  display: flex;
+
+  justify-content: flex-end;
+
+  gap: 10px;
+}
+
+.toast {
+  position: fixed;
+
+  right: 25px;
+  bottom: 25px;
+
+  background: #111827;
+
+  color: white;
+
+  padding: 13px 17px;
+
+  border-radius: 9px;
+
+  font-size: 13px;
+
+  transform: translateY(100px);
+
+  opacity: 0;
+
+  transition: 0.3s;
+
+  z-index: 2000;
+}
+
+.toast.show {
+  transform: translateY(0);
+
+  opacity: 1;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 1050px) {
+  .summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 650px) {
+  .container {
+    width: 94%;
+  }
+
+  .header-inner {
+    min-height: 65px;
+  }
+
+  .brand {
+    font-size: 19px;
+  }
+
+  .date-text {
+    display: none;
+  }
+
+  main {
+    padding-top: 25px;
+  }
+
+  .page-heading {
+    align-items: flex-start;
+
+    gap: 15px;
+  }
+
+  .page-heading h1 {
+    font-size: 23px;
+  }
+
+  .page-heading p {
+    font-size: 12px;
+  }
+
+  .page-heading .primary-btn {
+    padding: 10px 13px;
+
+    font-size: 12px;
+
+    white-space: nowrap;
+  }
+
+  .summary-grid {
+    gap: 10px;
+  }
+
+  .summary-card {
+    padding: 16px;
+  }
+
+  .summary-card h2 {
+    font-size: 19px;
+  }
+
+  .summary-label {
+    font-size: 12px;
+  }
+
+  .card-header {
+    padding: 17px;
+  }
+
+  .transactions-content,
+  .chart-content,
+  .category-content {
+    padding-left: 17px;
+    padding-right: 17px;
+  }
+
+  .data-actions {
+    display: grid;
+
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .data-actions button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  .header-right .theme-btn {
+    padding: 0 10px;
+
+    font-size: 12px;
+  }
+
+  .summary-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .summary-card h2 {
+    font-size: 17px;
+  }
+
+  .transaction-right {
+    gap: 4px;
+  }
+
+  .amount {
+    font-size: 12px;
+  }
+
+  .transaction-action {
+    font-size: 11px;
+  }
+
+  .modal {
+    padding: 20px;
+  }
+}
