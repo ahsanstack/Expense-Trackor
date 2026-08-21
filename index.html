@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Expense Tracker</title>
+
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <header>
+      <div class="container header-inner">
+        <div class="brand">Expense<span>Tracker</span></div>
+
+        <div class="header-right">
+          <span class="date-text" id="currentDate"></span>
+
+          <button class="theme-btn" onclick="toggleTheme()" id="themeButton">
+            Dark Mode
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <div class="container">
+        <!-- PAGE HEADING -->
+
+        <div class="page-heading">
+          <div>
+            <h1>Dashboard</h1>
+
+            <p>Manage your income and expenses in one place.</p>
+          </div>
+
+          <button class="primary-btn" onclick="openAddModal()">
+            Add Transaction
+          </button>
+        </div>
+
+        <div class="data-actions">
+          <button class="secondary-btn" onclick="exportData()">
+            Export Data
+          </button>
+
+          <button
+            class="secondary-btn"
+            onclick="document.getElementById('importFile').click()"
+          >
+            Import Data
+          </button>
+
+          <button class="danger-btn" onclick="openClearModal()">
+            Clear All
+          </button>
+
+          <input
+            type="file"
+            id="importFile"
+            accept=".json"
+            hidden
+            onchange="importData(event)"
+          />
+        </div>
+
+        <section class="summary-grid">
+          <div class="summary-card">
+            <p class="summary-label">Total Balance</p>
+
+            <h2 id="balance" class="balance">$0.00</h2>
+          </div>
+
+          <div class="summary-card">
+            <p class="summary-label">Total Income</p>
+
+            <h2 id="income" class="income">$0.00</h2>
+          </div>
+
+          <div class="summary-card">
+            <p class="summary-label">Total Expenses</p>
+
+            <h2 id="expenses" class="expense">$0.00</h2>
+          </div>
+
+          <div class="summary-card">
+            <p class="summary-label">Savings</p>
+
+            <h2 id="savings" class="saving">$0.00</h2>
+          </div>
+        </section>
+
+        <section class="content-grid">
+          <!-- TRANSACTIONS -->
+
+          <div class="card">
+            <div class="card-header">
+              <h3>Recent Transactions</h3>
+
+              <span
+                id="transactionCount"
+                style="color: var(--muted); font-size: 12px"
+              >
+                0 transactions
+              </span>
+            </div>
+
+            <div class="transactions-content">
+              <input
+                type="text"
+                class="search-input"
+                id="searchInput"
+                placeholder="Search transactions..."
+                oninput="renderTransactions()"
+              />
+
+              <div class="transaction-list" id="transactionList"></div>
+            </div>
+          </div>
+
+          <!-- RIGHT COLUMN -->
+
+          <div>
+            <!-- CHART -->
+
+            <div class="card">
+              <div class="card-header">
+                <h3>Expense Overview</h3>
+              </div>
+
+              <div class="chart-content">
+                <div class="chart-info">
+                  <div>
+                    <p>This Month</p>
+
+                    <strong id="monthExpense" class="expense"> $0.00 </strong>
+                  </div>
+
+                  <div style="text-align: right">
+                    <p>Total Expenses</p>
+
+                    <strong id="chartTotal"> $0.00 </strong>
+                  </div>
+                </div>
+
+                <div class="chart" id="chart"></div>
+
+                <div class="chart-labels">
+                  <span>Mon</span>
+                  <span>Tue</span>
+                  <span>Wed</span>
+                  <span>Thu</span>
+                  <span>Fri</span>
+                  <span>Sat</span>
+                  <span>Sun</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- CATEGORIES -->
+
+            <div class="card categories">
+              <div class="card-header">
+                <h3>Expense Categories</h3>
+              </div>
+
+              <div class="category-content" id="categoryList"></div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <div
+      class="modal-overlay"
+      id="transactionModal"
+      onclick="closeTransactionOutside(event)"
+    >
+      <div class="modal">
+        <div class="modal-header">
+          <h2 id="modalTitle">Add Transaction</h2>
+
+          <button class="close-btn" onclick="closeTransactionModal()">×</button>
+        </div>
+
+        <form id="transactionForm">
+          <div class="form-group">
+            <label> Transaction Type </label>
+
+            <div class="type-buttons">
+              <button
+                type="button"
+                class="type-btn expense-active"
+                id="expenseType"
+                onclick="setType('expense')"
+              >
+                Expense
+              </button>
+
+              <button
+                type="button"
+                class="type-btn"
+                id="incomeType"
+                onclick="setType('income')"
+              >
+                Income
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label> Description </label>
+
+            <input
+              type="text"
+              id="description"
+              placeholder="e.g. Grocery shopping"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label> Amount </label>
+
+            <input
+              type="number"
+              id="amount"
+              placeholder="0.00"
+              min="0.01"
+              step="0.01"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label> Category </label>
+
+            <select id="category">
+              <option value="Food">Food</option>
+
+              <option value="Shopping">Shopping</option>
+
+              <option value="Transport">Transport</option>
+
+              <option value="Bills">Bills</option>
+
+              <option value="Entertainment">Entertainment</option>
+
+              <option value="Health">Health</option>
+
+              <option value="Education">Education</option>
+
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label> Date </label>
+
+            <input type="date" id="date" required />
+          </div>
+
+          <button
+            type="submit"
+            class="primary-btn submit-btn"
+            id="submitButton"
+          >
+            Add Transaction
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div
+      class="modal-overlay"
+      id="clearModal"
+      onclick="closeClearOutside(event)"
+    >
+      <div class="modal confirm-modal">
+        <div class="modal-header">
+          <h2>Clear All Data</h2>
+
+          <button class="close-btn" onclick="closeClearModal()">×</button>
+        </div>
+
+        <p>
+          Are you sure you want to delete all transactions? This action cannot
+          be undone unless you have exported your data first.
+        </p>
+
+        <div class="confirm-actions">
+          <button class="secondary-btn" onclick="closeClearModal()">
+            Cancel
+          </button>
+
+          <button class="danger-btn" onclick="clearAllData()">
+            Clear Everything
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast">Transaction added successfully.</div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
