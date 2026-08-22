@@ -560,3 +560,204 @@ function renderCategories() {
     })
     .join("");
 }
+/* EXPORT DATA */
+
+function exportData() {
+  if (transactions.length === 0) {
+    showToast("There is no data to export.");
+
+    return;
+  }
+
+  const data = JSON.stringify(transactions, null, 2);
+
+  const blob = new Blob([data], {
+    type: "application/json",
+  });
+
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement("a");
+
+  link.href = url;
+
+  link.download = "expense-tracker-data.json";
+
+  link.click();
+
+  URL.revokeObjectURL(url);
+
+  showToast("Data exported successfully.");
+}
+
+/* IMPORT DATA */
+
+function importData(event) {
+  const file = event.target.files[0];
+
+  if (!file) {
+    return;
+  }
+
+  const reader = new FileReader();
+
+  reader.onload = function (e) {
+    try {
+      const imported = JSON.parse(e.target.result);
+
+      if (!Array.isArray(imported)) {
+        throw new Error();
+      }
+
+      const valid = imported.every(
+        (transaction) =>
+          transaction.id &&
+          transaction.description &&
+          typeof transaction.amount === "number" &&
+          transaction.category &&
+          transaction.date &&
+          (transaction.type === "income" || transaction.type === "expense"),
+      );
+
+      if (!valid) {
+        throw new Error();
+      }
+
+      const confirmed = confirm(
+        "Importing this file will replace your current data. Continue?",
+      );
+
+      if (!confirmed) {
+        event.target.value = "";
+
+        return;
+      }
+
+      transactions = imported;
+
+      saveData();
+
+      renderAll();
+
+      showToast("Data imported successfully.");
+    } catch {
+      showToast("Invalid expense tracker file.");
+    }
+
+    event.target.value = "";
+  };
+
+  reader.readAsText(file);
+}
+
+/* CLEAR ALL */
+
+function openClearModal() {
+  if (transactions.length === 0) {
+    showToast("There are no transactions to clear.");
+
+    return;
+  }
+
+  clearModal.classList.add("show");
+}
+
+function closeClearModal() {
+  clearModal.classList.remove("show");
+}
+
+function closeClearOutside(event) {
+  if (event.target === clearModal) {
+    closeClearModal();
+  }
+}
+
+function clearAllData() {
+  transactions = [];
+
+  localStorage.removeItem("expense_tracker_data");
+
+  renderAll();
+
+  closeClearModal();
+
+  showToast("All transactions have been cleared.");
+}
+
+/* DARK MODE */
+
+function toggleTheme() {
+  document.body.classList.toggle("dark");
+
+  const dark = document.body.classList.contains("dark");
+
+  localStorage.setItem("expense_theme", dark ? "dark" : "light");
+
+  document.getElementById("themeButton").textContent = dark
+    ? "Light Mode"
+    : "Dark Mode";
+}
+
+function loadTheme() {
+  const theme = localStorage.getItem("expense_theme");
+
+  if (theme === "dark") {
+    document.body.classList.add("dark");
+
+    document.getElementById("themeButton").textContent = "Light Mode";
+  }
+}
+
+let toastTimer;
+
+function showToast(message) {
+  const toast = document.getElementById("toast");
+
+  toast.textContent = message;
+
+  toast.classList.add("show");
+
+  clearTimeout(toastTimer);
+
+  toastTimer = setTimeout(() => {
+    toast.classList.remove("show");
+  }, 2500);
+}
+
+/* ESCAPE HTML */
+
+function escapeHTML(value) {
+  const div = document.createElement("div");
+
+  div.textContent = value;
+
+  return div.innerHTML;
+}
+
+/* ESC KEY */
+
+document.addEventListener("keydown", function (event) {
+  if (event.key === "Escape") {
+    if (transactionModal.classList.contains("show")) {
+      closeTransactionModal();
+    }
+
+    if (clearModal.classList.contains("show")) {
+      closeClearModal();
+    }
+  }
+});
+
+function renderAll() {
+  renderSummary();
+
+  renderTransactions();
+
+  renderChart();
+
+  renderCategories();
+}
+
+loadTheme();
+
+renderAll();
