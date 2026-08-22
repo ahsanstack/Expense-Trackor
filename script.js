@@ -230,3 +230,333 @@ function money(value) {
     })
   );
 }
+/* RENDER TRANSACTIONS */
+
+function renderTransactions() {
+  const list = document.getElementById("transactionList");
+
+  const search = document
+    .getElementById("searchInput")
+    .value.toLowerCase()
+    .trim();
+
+  const filtered = transactions.filter(
+    (transaction) =>
+      transaction.description.toLowerCase().includes(search) ||
+      transaction.category.toLowerCase().includes(search),
+  );
+
+  if (filtered.length === 0) {
+    list.innerHTML = `
+ 
+            <div class="empty">
+ 
+                ${search ? "No transactions found." : "No transactions yet."}
+ 
+            </div>
+ 
+        `;
+
+    return;
+  }
+
+  list.innerHTML = filtered
+    .map((transaction) => {
+      const sign = transaction.type === "income" ? "+" : "-";
+
+      const amountClass = transaction.type === "income" ? "income" : "expense";
+
+      const formattedDate = new Date(
+        transaction.date + "T00:00:00",
+      ).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+
+      return `
+ 
+                    <div
+                        class="transaction"
+                    >
+ 
+                        <div
+                            class="
+                                transaction-details
+                            "
+                        >
+ 
+                            <h4>
+                                ${escapeHTML(transaction.description)}
+                            </h4>
+ 
+ 
+                            <p>
+                                ${escapeHTML(transaction.category)}
+                                •
+                                ${formattedDate}
+                            </p>
+ 
+                        </div>
+ 
+ 
+                        <div
+                            class="
+                                transaction-right
+                            "
+                        >
+ 
+                            <span
+                                class="
+                                    amount
+                                    ${amountClass}
+                                "
+                            >
+                                ${sign}${money(transaction.amount)}
+                            </span>
+ 
+ 
+                            <button
+                                class="
+                                    transaction-action
+                                    edit-btn
+                                "
+                                onclick="
+                                    editTransaction(
+                                        ${transaction.id}
+                                    )
+                                "
+                            >
+                                Edit
+                            </button>
+ 
+ 
+                            <button
+                                class="
+                                    transaction-action
+                                    delete-btn
+                                "
+                                onclick="
+                                    deleteTransaction(
+                                        ${transaction.id}
+                                    )
+                                "
+                            >
+                                Delete
+                            </button>
+ 
+                        </div>
+ 
+                    </div>
+ 
+                `;
+    })
+    .join("");
+}
+
+function renderSummary() {
+  const income = transactions
+    .filter((t) => t.type === "income")
+    .reduce((sum, t) => sum + t.amount, 0);
+
+  const expenses = transactions
+    .filter((t) => t.type === "expense")
+    .reduce((sum, t) => sum + t.amount, 0);
+
+  const balance = income - expenses;
+
+  document.getElementById("balance").textContent = money(balance);
+
+  document.getElementById("income").textContent = money(income);
+
+  document.getElementById("expenses").textContent = money(expenses);
+
+  document.getElementById("savings").textContent = money(Math.max(balance, 0));
+
+  document.getElementById("chartTotal").textContent = money(expenses);
+
+  document.getElementById("transactionCount").textContent =
+    transactions.length +
+    (transactions.length === 1 ? " transaction" : " transactions");
+
+  const now = new Date();
+
+  const currentMonth = now.getMonth();
+
+  const currentYear = now.getFullYear();
+
+  const monthExpense = transactions
+    .filter((t) => {
+      const date = new Date(t.date + "T00:00:00");
+
+      return (
+        t.type === "expense" &&
+        date.getMonth() === currentMonth &&
+        date.getFullYear() === currentYear
+      );
+    })
+    .reduce((sum, t) => sum + t.amount, 0);
+
+  document.getElementById("monthExpense").textContent = money(monthExpense);
+}
+
+/* CHART */
+
+function renderChart() {
+  const chart = document.getElementById("chart");
+
+  const today = new Date();
+
+  const day = today.getDay();
+
+  const mondayOffset = day === 0 ? -6 : 1 - day;
+
+  const monday = new Date(today);
+
+  monday.setDate(today.getDate() + mondayOffset);
+
+  monday.setHours(0, 0, 0, 0);
+
+  const days = [];
+
+  for (let i = 0; i < 7; i++) {
+    const date = new Date(monday);
+
+    date.setDate(monday.getDate() + i);
+
+    days.push(date);
+  }
+
+  const values = days.map((day) => {
+    return transactions
+      .filter((t) => {
+        if (t.type !== "expense") {
+          return false;
+        }
+
+        const date = new Date(t.date + "T00:00:00");
+
+        return (
+          date.getFullYear() === day.getFullYear() &&
+          date.getMonth() === day.getMonth() &&
+          date.getDate() === day.getDate()
+        );
+      })
+      .reduce((sum, t) => sum + t.amount, 0);
+  });
+
+  const max = Math.max(...values, 1);
+
+  chart.innerHTML = values
+    .map((value) => {
+      const height = Math.max((value / max) * 100, 3);
+
+      return `
+ 
+                    <div
+                        class="bar-wrapper"
+                    >
+ 
+                        <div
+                            class="bar"
+                            style="
+                                height:
+                                ${height}%
+                            "
+                            data-value="
+                                ${money(value)}
+                            "
+                        ></div>
+ 
+                    </div>
+ 
+                `;
+    })
+    .join("");
+}
+
+/* CATEGORIES */
+
+function renderCategories() {
+  const list = document.getElementById("categoryList");
+
+  const totals = {};
+
+  transactions
+    .filter((t) => t.type === "expense")
+    .forEach((t) => {
+      if (!totals[t.category]) {
+        totals[t.category] = 0;
+      }
+
+      totals[t.category] += t.amount;
+    });
+
+  const categories = Object.entries(totals).sort((a, b) => b[1] - a[1]);
+
+  if (categories.length === 0) {
+    list.innerHTML = `
+ 
+            <div class="empty">
+                No expense data yet.
+            </div>
+ 
+        `;
+
+    return;
+  }
+
+  const total = categories.reduce((sum, item) => sum + item[1], 0);
+
+  list.innerHTML = categories
+    .map(([category, amount]) => {
+      const percentage = (amount / total) * 100;
+
+      return `
+ 
+                    <div
+                        class="
+                            category-item
+                        "
+                    >
+ 
+                        <div
+                            class="
+                                category-top
+                            "
+                        >
+ 
+                            <span>
+                                ${escapeHTML(category)}
+                            </span>
+ 
+ 
+                            <strong>
+                                ${money(amount)}
+                            </strong>
+ 
+                        </div>
+ 
+ 
+                        <div
+                            class="progress"
+                        >
+ 
+                            <div
+                                class="
+                                    progress-bar
+                                "
+                                style="
+                                    width:
+                                    ${percentage}%
+                                "
+                            ></div>
+ 
+                        </div>
+ 
+                    </div>
+ 
+                `;
+    })
+    .join("");
+}
