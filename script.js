@@ -7,6 +7,21 @@ let currentType = "expense";
 
 let editingId = null;
 
+/* =========================
+   CURRENCY CONFIG
+========================== */
+
+const CURRENCIES = {
+  USD: { symbol: "$", rate: 1, locale: "en-US" },
+  PKR: { symbol: "₨", rate: 278.5, locale: "en-PK" },
+  EUR: { symbol: "€", rate: 0.92, locale: "de-DE" },
+  GBP: { symbol: "£", rate: 0.79, locale: "en-GB" },
+  INR: { symbol: "₹", rate: 83.12, locale: "en-IN" },
+  JPY: { symbol: "¥", rate: 151.5, locale: "ja-JP" },
+};
+
+let currentCurrency = localStorage.getItem("expense_currency") || "USD";
+
 /* ELEMENTS */
 
 const transactionModal = document.getElementById("transactionModal");
@@ -222,9 +237,13 @@ function saveData() {
 }
 
 function money(value) {
+  const currency = CURRENCIES[currentCurrency];
+
+  const converted = value * currency.rate;
+
   return (
-    "$" +
-    value.toLocaleString("en-US", {
+    currency.symbol +
+    converted.toLocaleString(currency.locale, {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     })
@@ -684,6 +703,20 @@ function clearAllData() {
   showToast("All transactions have been cleared.");
 }
 
+/* CURRENCY */
+
+function setCurrency(code) {
+  currentCurrency = code;
+
+  localStorage.setItem("expense_currency", code);
+
+  renderAll();
+}
+
+function loadCurrency() {
+  document.getElementById("currencySelect").value = currentCurrency;
+}
+
 /* DARK MODE */
 
 function toggleTheme() {
@@ -759,5 +792,7 @@ function renderAll() {
 }
 
 loadTheme();
+
+loadCurrency();
 
 renderAll();
