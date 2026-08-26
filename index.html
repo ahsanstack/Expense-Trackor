@@ -15,6 +15,18 @@
         <div class="brand">Expense<span>Tracker</span></div>
 
         <div class="header-right">
+          <select
+            class="currency-select"
+            id="currencySelect"
+            onchange="setCurrency(this.value)"
+          >
+            <option value="USD">USD ($)</option>
+            <option value="PKR">PKR (₨)</option>
+            <option value="EUR">EUR (€)</option>
+            <option value="GBP">GBP (£)</option>
+            <option value="INR">INR (₹)</option>
+            <option value="JPY">JPY (¥)</option>
+          </select>
           <span class="date-text" id="currentDate"></span>
 
           <button class="theme-btn" onclick="toggleTheme()" id="themeButton">
